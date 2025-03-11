@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Health Assistant</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; background-color: #111; color: white; }
+        .sidebar { position: fixed; left: 0; top: 0; width: 200px; height: 100vh; background: #222; padding-top: 20px; }
+        .sidebar button { display: block; width: 100%; padding: 15px; background: cyan; border: none; cursor: pointer; margin-bottom: 5px; }
+        .container { display: none; padding: 20px; margin-left: 220px; }
+        .active { display: block; }
+        ul { list-style: none; padding: 0; }
+        li { margin: 10px; padding: 10px; background: #444; border-radius: 5px; cursor: pointer; }
+        li.completed { background: green; text-decoration: line-through; }
+        button { padding: 10px; cursor: pointer; background: cyan; border: none; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <button onclick="navigate('profile')">Profile</button>
+        <button onclick="navigate('bmi')">Calculate BMI</button>
+        <button onclick="navigate('tasks')">Today's Tasks</button>
+        <button onclick="navigate('schedule')">30 Days Schedule</button>
+    </div>
+
+    <div id="profile" class="container">
+        <h2>User Profile</h2>
+        <input type="text" id="name" placeholder="Enter Name">
+        <input type="email" id="email" placeholder="Enter Email">
+        <input type="file" id="profilePic" accept="image/*" onchange="previewImage()">
+        <button onclick="saveProfile()">Save Profile</button>
+        <div>
+            <h3>Profile Details:</h3>
+            <img id="displayPic" src="" style="width:100px; height:100px; display:none; border-radius:50%;">
+            <p id="displayName"></p>
+            <p id="displayEmail"></p>
+        </div>
+    </div>
+
+    <div id="bmi" class="container active">
+        <h2>BMI Calculator</h2>
+        <input type="number" id="weight" placeholder="Weight (kg)">
+        <input type="number" id="height" placeholder="Height (cm)">
+        <button onclick="calculateBMI()">Calculate</button>
+        <p id="bmiResult"></p>
+        <h3>BMI History</h3>
+        <ul id="bmiHistory"></ul>
+    </div>
+
+    <div id="tasks" class="container">
+        <h2>Today's Tasks</h2>
+        <ul id="taskList"></ul>
+    </div>
+
+    <div id="schedule" class="container">
+        <h2>30 Days Schedule</h2>
+        <ul id="scheduleList"></ul>
+    </div>
+
+    <script>
+        function navigate(section) {
+            document.querySelectorAll('.container').forEach(div => div.classList.remove('active'));
+            document.getElementById(section).classList.add('active');
+        }
+
+        function calculateBMI() {
+            let weight = document.getElementById('weight').value;
+            let height = document.getElementById('height').value / 100;
+            if (!weight || !height) return alert("Please enter valid weight and height.");
+            let bmi = (weight / (height * height)).toFixed(2);
+            document.getElementById('bmiResult').innerText = `Your BMI: ${bmi}`;
+            localStorage.setItem('bmi', bmi);
+            generateTasks();
+            generateSchedule();
+        }
+
+        function generateTasks() {
+            let bmi = parseFloat(localStorage.getItem('bmi')) || 0;
+            let tasks = [];
+
+            if (bmi < 18.5) {
+                tasks = ["Eat a high-protein meal", "Do light weight training", "Drink a smoothie", "Get 8 hours of sleep", "Increase calorie intake"];
+            } else if (bmi >= 18.5 && bmi < 25) {
+                tasks = ["Maintain balanced diet", "30-minute cardio", "Stretching exercises", "Drink 2 liters of water", "Eat a fruit"];
+            } else {
+                tasks = ["Low-carb meal", "45-minute walk", "Strength training", "Avoid sugary drinks", "Increase fiber intake"];
+            }
+
+            let taskList = document.getElementById('taskList');
+            taskList.innerHTML = "";
+            tasks.forEach(task => {
+                let taskItem = document.createElement("li");
+                taskItem.textContent = task;
+                taskItem.onclick = function () {
+                    taskItem.classList.toggle("completed");
+                    saveTasks();
+                };
+                taskList.appendChild(taskItem);
+            });
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+        }
+
+        function generateSchedule() {
+            let scheduleList = document.getElementById('scheduleList');
+            scheduleList.innerHTML = "";
+            let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+            for (let i = 1; i <= 30; i++) {
+                let dayItem = document.createElement("li");
+                dayItem.textContent = `Day ${i}: ${tasks[i % tasks.length]}`;
+                scheduleList.appendChild(dayItem);
+            }
+        }
+
+        function sendTaskReminder() {
+            let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+            let incompleteTasks = tasks.filter(task => !document.querySelector(`#taskList li:contains('${task}')`).classList.contains('completed'));
+            if (incompleteTasks.length > 0) {
+                let msg = `Reminder: You have ${incompleteTasks.length} tasks left!`;
+                alert(msg);
+                let speech = new SpeechSynthesisUtterance(msg);
+                speechSynthesis.speak(speech);
+            }
+        }
+
+        window.onload = function() {
+            generateTasks();
+            generateSchedule();
+            setInterval(sendTaskReminder, 60000);
+        };
+    </script>
+</body>
+</html>
