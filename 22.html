@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Quest - AI Edition</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection"></script>
+    <script src="script.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron&display=swap');
+        
+        body {
+            font-family: 'Orbitron', sans-serif;
+            margin: 0;
+            padding: 0;
+            color: cyan;
+            text-align: center;
+            overflow-y: auto;
+            background: url('https://source.unsplash.com/1600x900/?cyberpunk,ai') no-repeat center center fixed;
+            background-size: cover;
+            animation: pulseBg 10s infinite alternate;
+        }
+        
+        @keyframes pulseBg {
+            0% { filter: brightness(1); }
+            100% { filter: brightness(1.2); }
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            box-shadow: 0px 0px 20px cyan;
+            border-radius: 15px;
+        }
+        
+        input {
+            width: 90%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: none;
+            background: rgba(255, 255, 255, 0.2);
+            color: cyan;
+            text-align: center;
+        }
+        
+        .btn {
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            color: white;
+            background: linear-gradient(to right, #00c6ff, #0072ff);
+            border: none;
+            cursor: pointer;
+            border-radius: 10px;
+            margin-top: 20px;
+            transition: transform 0.3s ease-in-out;
+        }
+        .btn:hover { transform: scale(1.1); box-shadow: 0 0 15px cyan; }
+        
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="container" id="loginPage">
+        <h1>Health Quest - Login</h1>
+        <input type="text" id="username" placeholder="Username">
+        <input type="password" id="password" placeholder="Password">
+        <button class="btn" onclick="login()">Login</button>
+        <p>Don't have an account? <a href="#" onclick="showRegister()">Register</a></p>
+    </div>
+
+    <div class="container hidden" id="registerPage">
+        <h1>Register</h1>
+        <input type="text" id="regUsername" placeholder="Username">
+        <input type="password" id="regPassword" placeholder="Password">
+        <button class="btn" onclick="register()">Register</button>
+        <p>Already have an account? <a href="#" onclick="showLogin()">Login</a></p>
+    </div>
+
+    <div class="game-container hidden" id="gameContainer">
+        <h1>Welcome to Health Quest</h1>
+        <a href="/health/health1.html" class="btn game-btn">ENTER GAME</a>
+    </div>
+
+    <script>
+        function showRegister() {
+            document.getElementById('loginPage').classList.add('hidden');
+            document.getElementById('registerPage').classList.remove('hidden');
+        }
+        function showLogin() {
+            document.getElementById('registerPage').classList.add('hidden');
+            document.getElementById('loginPage').classList.remove('hidden');
+        }
+        function register() {
+            const username = document.getElementById('regUsername').value;
+            const password = document.getElementById('regPassword').value;
+            if (username && password) {
+                localStorage.setItem(username, password);
+                alert("Registration successful! Please login.");
+                showLogin();
+            } else {
+                alert("Please fill all fields.");
+            }
+        }
+
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            if (localStorage.getItem(username) === password) {
+                alert("Login successful!");
+                document.getElementById('loginPage').classList.add('hidden');
+                document.getElementById('gameContainer').classList.remove('hidden');
+            } else {
+                alert("Invalid credentials!");
+            }
+        }
+    </script>
+</body>
+</html>
